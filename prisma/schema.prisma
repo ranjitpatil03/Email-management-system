@@ -1,0 +1,95 @@
+// Prisma Schema for AI-Powered Email Management System
+// Using SQLite for local development
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Users table for system authentication and user management
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  role         String    @default("user")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastLogin    DateTime? @map("last_login")
+  isActive     Boolean   @default(true) @map("is_active")
+  
+  emails       Email[]
+  
+  @@map("users")
+}
+
+// Emails table for storing and analyzing emails
+model Email {
+  id               String    @id @default(cuid())
+  userId           String?   @map("user_id")
+  externalId       String?   @map("external_id")
+  senderEmail      String    @map("sender_email")
+  senderName       String?   @map("sender_name")
+  subject          String
+  content          String
+  htmlContent      String?   @map("html_content")
+  receivedAt       DateTime  @map("received_at")
+  
+  // AI Analysis Fields
+  aiSummary        String?   @map("ai_summary")
+  category         String?
+  priority         String    @default("medium")
+  priorityScore    Int?      @map("priority_score")
+  priorityReasons  String?   @map("priority_reasons")
+  priorityBreakdown String?  @map("priority_breakdown")
+  opportunityScore Int?      @map("opportunity_score")
+  sentimentScore   Int?      @map("sentiment_score")
+  urgencyScore     Int?      @map("urgency_score")
+  
+  // Enhanced Fields for demo
+  draftReply       String?   @map("draft_reply")
+  opportunityExplanation String? @map("opportunity_explanation")
+  recommendedAction String?  @map("recommended_action")
+  
+  // Email Metadata
+  isRead           Boolean   @default(false) @map("is_read")
+  isArchived       Boolean   @default(false) @map("is_archived")
+  isStarred        Boolean   @default(false) @map("is_starred")
+  hasAttachments   Boolean   @default(false) @map("has_attachments")
+  
+  // Technical Fields
+  emailProvider    String?   @map("email_provider")
+  threadId         String?   @map("thread_id")
+  
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  user             User?     @relation(fields: [userId], references: [id])
+  attachments      Attachment[]
+  
+  // Indexes
+  @@index([userId])
+  @@index([receivedAt])
+  @@index([priority])
+  @@index([category])
+  @@index([opportunityScore])
+  
+  @@map("emails")
+}
+
+// Email Attachments
+model Attachment {
+  id        String   @id @default(cuid())
+  emailId   String   @map("email_id")
+  name      String
+  size      String
+  type      String
+  
+  email     Email    @relation(fields: [emailId], references: [id])
+  
+  @@map("attachments")
+}

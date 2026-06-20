@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env
+prisma/dev.db
+
+# Prisma generated files
+/app/generated/prisma
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

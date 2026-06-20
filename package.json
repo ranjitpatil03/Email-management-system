@@ -1,0 +1,35 @@
+{
+  "name": "email-management-system",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:reset": "rm -f prisma/dev.db && npx prisma db push && npm run prisma:seed"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.16.2",
+    "autoprefixer": "^10.4.0",
+    "imapflow": "^1.4.0",
+    "lucide-react": "^0.309.0",
+    "next": "^14.0.0",
+    "postcss": "^8.4.0",
+    "prisma": "^4.16.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.0.0"
+  }
+}
