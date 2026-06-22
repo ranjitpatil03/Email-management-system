@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { fetchEmailById } from '../../lib/api'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 interface EmailDetailPageProps {
   params: Promise<{ id: string }>
@@ -9,10 +11,41 @@ interface EmailDetailPageProps {
 
 export default async function EmailDetailPage({ params }: EmailDetailPageProps) {
   const { id } = await params
-  const email = await fetchEmailById(id)
   
-  if (!email) {
+  const emailRecord = await prisma.email.findUnique({
+    where: { id },
+    include: {
+      attachments: true,
+    },
+  })
+  
+  if (!emailRecord) {
     notFound()
+  }
+  
+  // Transform data for frontend
+  const email = {
+    id: emailRecord.id,
+    sender: emailRecord.senderEmail,
+    subject: emailRecord.subject,
+    content: emailRecord.content,
+    summary: emailRecord.aiSummary || '',
+    category: emailRecord.category || 'Business',
+    priority: emailRecord.priority,
+    opportunityScore: emailRecord.opportunityScore || 0,
+    receivedDate: emailRecord.receivedAt.toISOString(),
+    recommendedAction: emailRecord.recommendedAction || '',
+    priorityReasons: emailRecord.priorityReasons ? JSON.parse(emailRecord.priorityReasons) : [],
+    priorityScore: emailRecord.priorityScore || 0,
+    priorityBreakdown: emailRecord.priorityBreakdown ? JSON.parse(emailRecord.priorityBreakdown) : [],
+    attachments: emailRecord.attachments.map(attachment => ({
+      id: attachment.id,
+      name: attachment.name,
+      size: attachment.size,
+      type: attachment.type,
+    })),
+    draftReply: emailRecord.draftReply || '',
+    opportunityExplanation: emailRecord.opportunityExplanation || '',
   }
 
   return (
