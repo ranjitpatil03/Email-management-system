@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import DashboardStats from './components/DashboardStats'
+import { useState, useMemo, useEffect, useCallback } from 'react'
+import DashboardStats, { type StatFilterType } from './components/DashboardStats'
 import EmailTable from './components/EmailTable'
 import EmailFilters, { FilterOptions } from './components/EmailFilters'
 import { fetchEmails, fetchDashboardStats, type Email } from './lib/api'
@@ -26,6 +26,7 @@ export default function Home() {
     category: [],
     opportunityLevel: []
   })
+  const [activeStatFilter, setActiveStatFilter] = useState<StatFilterType>(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncResult, setSyncResult] = useState<{ success: boolean; message: string; count?: number } | null>(null)
@@ -69,9 +70,25 @@ export default function Home() {
     loadData()
   }, [])
 
-  // Filter emails based on search and filters
+  // Stat filter handler
+  const handleStatFilterChange = (filter: StatFilterType) => {
+    setActiveStatFilter(filter)
+  }
+
+  // Filter emails based on search, filters, and stat card filter
   const filteredEmails = useMemo(() => {
     return allEmails.filter(email => {
+      // Stat card filter (overrides manual filters)
+      if (activeStatFilter === 'critical' && email.priority !== 'Critical') {
+        return false
+      }
+      if (activeStatFilter === 'highPriority' && email.priority !== 'High') {
+        return false
+      }
+      if (activeStatFilter === 'opportunities' && email.opportunityScore < 70) {
+        return false
+      }
+
       // Search filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase()
@@ -113,7 +130,7 @@ export default function Home() {
 
       return true
     })
-  }, [allEmails, searchTerm, filters])
+  }, [allEmails, searchTerm, filters, activeStatFilter])
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters)
@@ -280,7 +297,13 @@ export default function Home() {
         </div>
       )}
       
-      <DashboardStats stats={stats} emailUser={emailUser} syncInfo={syncInfo} />
+      <DashboardStats 
+        stats={stats} 
+        emailUser={emailUser} 
+        syncInfo={syncInfo} 
+        activeStatFilter={activeStatFilter}
+        onStatFilterChange={handleStatFilterChange}
+      />
       
       <EmailFilters 
         onFilterChange={handleFilterChange}
