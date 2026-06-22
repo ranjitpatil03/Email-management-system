@@ -1,12 +1,27 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { TrendingUp, Target, Building, Clock, DollarSign } from 'lucide-react'
-import { getMockEmails } from '../data/mockData'
 import Link from 'next/link'
+import { fetchEmails, type Email } from '../lib/api'
 
 export default function OpportunitiesPage() {
-  const allEmails = getMockEmails()
+  const [allEmails, setAllEmails] = useState<Email[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadEmails = async () => {
+      try {
+        const emails = await fetchEmails()
+        setAllEmails(emails)
+      } catch (error) {
+        console.error('Error loading emails:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadEmails()
+  }, [])
   
   // Filter emails with opportunity score >= 50
   const opportunityEmails = useMemo(() => {
@@ -86,6 +101,23 @@ export default function OpportunitiesPage() {
   const immediateOpportunities = opportunityEmails.filter(e => 
     e.content.toLowerCase().includes('urgent') || e.subject.toLowerCase().includes('urgent')
   ).length
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Opportunity Center</h1>
+          <p className="text-gray-600">Track and manage business opportunities identified in emails</p>
+        </div>
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading opportunities from database...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

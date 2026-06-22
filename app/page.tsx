@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import DashboardStats, { type StatFilterType } from './components/DashboardStats'
 import EmailTable from './components/EmailTable'
 import EmailFilters, { FilterOptions } from './components/EmailFilters'
